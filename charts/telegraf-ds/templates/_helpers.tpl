@@ -387,3 +387,12 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Activate inputs.internal through flag monitor_self
+*/}}
+{{- define "monitor_self" -}}
+{{- if . -}}
+[[inputs.internal]]
+{{- end }}
+{{- end -}}

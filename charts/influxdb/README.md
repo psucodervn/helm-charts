@@ -75,7 +75,10 @@ The command removes all the Kubernetes components associated with the chart and 
 | nodeSelector | Node labels for pod assignment | {} |
 | affinity | [Affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity) for pod assignment |  {|
 | tolerations | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) for pod assignment | [] |
+| securityContext | [securityContext](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) for pod | {} |
 | env | environment variables for influxdb container | {} |
+| volumes | `volumes` stanza(s) to be used in the main container | nil |
+| mountPoints | `volumeMount` stanza(s) to be used in the main container | nil |
 | config.reporting_disabled | [Details](https://docs.influxdata.com/influxdb/v1.7/administration/config/#reporting-disabled-false) | false |
 | config.rpc | RPC address for backup and storage | {} |
 | config.meta | [Details](https://docs.influxdata.com/influxdb/v1.7/administration/config/#meta) | {} |
@@ -95,9 +98,12 @@ The command removes all the Kubernetes components associated with the chart and 
 | config.tls | [Details](https://docs.influxdata.com/influxdb/v1.7/administration/config/#tls) | {} |
 | initScripts.enabled | Boolean flag to enable and disable initscripts. If the container finds any files with the extensions .sh or .iql inside of the /docker-entrypoint-initdb.d folder, it will execute them. The order they are executed in is determined by the shell. This is usually alphabetical order. | false |
 | initScripts.scripts | Init scripts | {} |
-| backup.enabled | Boolean flag to enable and disable backups. Currently, it backups the data on `azure` and `gcs`. | false |
-| backup.schedule | Cron time | `0 0 * * *`. It means create a backup everyday at `00:00`. |
-| backup.annotations | Annotations for backup | {} |
+| backup.enabled | Enable backups, if `true` must configure one of the storage providers | `false` |
+| backup.gcs | Google Cloud Storage config | `nil`
+| backup.azure | Azure Blob Storage config | `nil`
+| backup.schedule | Schedule to run jobs in cron format | `0 0 * * *` |
+| backup.annotations | Annotations for backup cronjob | {} |
+| backup.podAnnotations | Annotations for backup cronjob pods | {} |
 
 The [full image documentation](https://hub.docker.com/_/influxdb/) contains more information about running InfluxDB in docker.
 
@@ -246,6 +252,22 @@ spec:
 
 At which point the data from the new `<db name>_bak` dbs would have to be side loaded into the original dbs.
 Please see [InfluxDB documentation for more restore examples](https://docs.influxdata.com/influxdb/v1.7/administration/backup_and_restore/#restore-examples).
+
+## Mounting extra volumes
+
+Extra volumes can be mounted by providing the `volumes` and `mountPoints` keys, consistent
+with the behavior of other charts provided by Influxdata.
+
+```yaml
+volumes:
+- name: ssl-cert-volume
+  secret:
+    secretName: secret-name
+mountPoints:
+- name: ssl-cert-volume
+  mountPath: /etc/ssl/certs/selfsigned/
+  readOnly: true
+```
 
 ## Upgrading
 
